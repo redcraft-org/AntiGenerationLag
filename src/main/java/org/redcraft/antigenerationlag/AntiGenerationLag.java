@@ -6,9 +6,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkPopulateEvent;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class AntiGenerationLag extends JavaPlugin implements Listener {
@@ -28,12 +29,34 @@ public class AntiGenerationLag extends JavaPlugin implements Listener {
 
 	@EventHandler (priority = EventPriority.LOW)
 	public void onChunkLoad(ChunkLoadEvent e) {
-		// TODO check chunk load events
+		Chunk chunk = e.getChunk();
+
+		Player nearestPlayer = this.getNearestPlayerFromChunk(chunk);
+
+		if (nearestPlayer != null) {
+			this.performPlayerSpeedChecks(nearestPlayer, chunk, e.isNewChunk());
+		}
 	}
 
-	@EventHandler (priority = EventPriority.LOW)
-	public void onChunkGenerate(ChunkPopulateEvent e) {
-		// TODO check chunk load events
+	private void performPlayerSpeedChecks(Player player, Chunk chunk, boolean isNewChunk) {
+		// TODO perform checks
+	}
+
+	private Player getNearestPlayerFromChunk(Chunk chunk) {
+		Player nearestPlayer = null;
+		double nearestPlayerDistance = Double.MAX_VALUE;
+
+		Location centerChunkLocation = chunk.getBlock(8, 8, 128).getLocation();
+		for (Player player : centerChunkLocation.getWorld().getPlayers()) {
+			double playerDistanceFromChunk = centerChunkLocation.distance(player.getLocation());
+
+			if (playerDistanceFromChunk < nearestPlayerDistance) {
+				nearestPlayerDistance = playerDistanceFromChunk;
+				nearestPlayer = player;
+			}
+		}
+
+		return nearestPlayer;
 	}
 
 	private void readConfig() {
