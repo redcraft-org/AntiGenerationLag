@@ -1,0 +1,19 @@
+#  ___        _  ___           __ _
+# | _ \___ __| |/ __|_ _ __ _ / _| |_   ___ _ _ __ _
+# |   / -_) _` | (__| '_/ _` |  _|  _|_/ _ \ '_/ _` |
+# |_|_\___\__,_|\___|_| \__,_|_|  \__(_)___/_| \__, |
+#                                              |___/
+#
+
+# We'll do all of our averages checks over a time frame to rubber band players if they travel too fast
+time-frame-seconds: 15
+
+# Amount of chunks a user can generate within the set time frame before getting rubber-banded
+generation-limit: 32
+
+# Amount of already generated chunks a user can load within the set time frame before getting rubber-banded
+load-limit: 64
+
+# This is to warn players that they've been rubber-banded
+warn-player: false
+warn-message: "&cYou've going too fast, please lower your speed hacks parameters"
