@@ -6,14 +6,18 @@
 #
 
 # We'll do all of our averages checks over a time frame to rubber band players if they travel too fast
-time-frame-seconds: 15
-
-# Amount of chunks a user can generate within the set time frame before getting rubber-banded
-generation-limit: 32
+time-frame-seconds: 15.0
 
 # Amount of already generated chunks a user can load within the set time frame before getting rubber-banded
 load-limit: 64
 
+# This is the modifier for newly generated chunks, by default generating 1 chunk counts as 8 chunks
+generation-modifier: 8
+
+# This defines how hard the user will be pushed back
+rubber-band-modifier: 2.0
+
 # This is to warn players that they've been rubber-banded
 warn-player: false
 warn-message: "&cYou've going too fast, please lower your speed hacks parameters"
+warn-cooldown-seconds: 5.0

@@ -1,17 +1,23 @@
 package org.redcraft.antigenerationlag;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class LocationUtils {
 
-    HashMap<UUID, double[]> chunkTimestamps = new HashMap<UUID, double[]>();
+    HashMap<UUID, ArrayList<Double>> chunkTimestamps = new HashMap<UUID, ArrayList<Double>>();
+
+    HashMap<UUID, Double> warnCooldowns = new HashMap<UUID, Double>();
 
     Config config = new Config();
 
@@ -20,11 +26,46 @@ public class LocationUtils {
     }
 
     public void performPlayerSpeedChecks(Player player, Chunk chunk, boolean isNewChunk) {
-        double[] lastLoadedChunks = chunkTimestamps.getOrDefault(player.getUniqueId(), new double[] {});
+        UUID playerUniqueId = player.getUniqueId();
 
-        // TODO Do the checks and rubber band player
+        double currentTimestamp = System.currentTimeMillis();
+        double timestampThreshold = currentTimestamp - config.timeFrameSeconds * 1000;
 
-        chunkTimestamps.put(player.getUniqueId(), lastLoadedChunks);
+        ArrayList<Double> lastLoadedChunks = chunkTimestamps.getOrDefault(playerUniqueId, new ArrayList<Double>());
+
+        // Filter loaded chunks that are older than the defined amount of seconds in the config
+        lastLoadedChunks.removeIf(timestamp -> timestamp > timestampThreshold);
+
+        int chunksToAdd = isNewChunk ? config.generationModifier : 1;
+
+        for (int i = 0; i < chunksToAdd; i++) {
+            lastLoadedChunks.add(currentTimestamp);
+        }
+
+        chunkTimestamps.put(playerUniqueId, lastLoadedChunks);
+
+        if (lastLoadedChunks.size() > config.loadLimit) {
+            Vector rubberBandVelocity = player.getVelocity().multiply(-1 * config.rubberBandModifier);
+            Location rubberBandLocation = player.getLocation().add(rubberBandVelocity);
+            this.punishPlayer(player, rubberBandLocation);
+        }
+    }
+
+    public void punishPlayer(Player player, Location rubberBandLocation) {
+        player.teleport(rubberBandLocation);
+        player.setVelocity(new Vector(0, 0, 0));
+
+        if (config.warnPlayer) {
+            UUID playerUniqueId = player.getUniqueId();
+            double warnCooldown = warnCooldowns.getOrDefault(playerUniqueId, 0.0);
+
+            double currentTimestamp = System.currentTimeMillis();
+
+            if (warnCooldown < currentTimestamp) {
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&', config.warnMessage));
+                warnCooldowns.put(playerUniqueId, currentTimestamp + (config.warnCooldown * 1000));
+            }
+        }
     }
 
     public Player getNearestPlayerFromChunk(Chunk chunk) {
