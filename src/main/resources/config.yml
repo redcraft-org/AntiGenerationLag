@@ -22,7 +22,7 @@ generation-modifier: 8
 
 # This defines how far the player will be pushed back, it depends on the velocity
 # Players with the permission "antigenerationlag.norubberband" will not be rubber banded or warned
-rubber-band-modifier: 15.0
+rubber-band-modifier: 50.0
 
 # This is to warn players that they've been rubber-banded
 warn-player: true
