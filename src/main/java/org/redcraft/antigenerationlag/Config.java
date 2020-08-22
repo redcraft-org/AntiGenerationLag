@@ -4,32 +4,35 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class Config {
-    public double timeFrameSeconds;
+    static public long timeFrameSeconds;
 
-    public int loadLimit;
-    public int generationModifier;
+    static public int loadLimitPerSecond;
 
-    public double rubberBandModifier;
+    static public int generationModifier;
 
-    public boolean warnPlayer;
-    public String warnMessage;
-    public double warnCooldown;
+    static public long rubberBandModifier;
 
-    public void readConfig(JavaPlugin plugin) {
+    static public boolean warnPlayer;
+    static public String warnMessage;
+
+    static public boolean debugSpeed;
+
+    static public void readConfig(JavaPlugin plugin) {
         plugin.saveDefaultConfig();
 
         FileConfiguration config = plugin.getConfig();
 
-        timeFrameSeconds = config.getDouble("time-frame-seconds");
+        timeFrameSeconds = config.getLong("time-frame-seconds");
 
-        loadLimit = config.getInt("load-limit");
+        loadLimitPerSecond = config.getInt("load-limit-per-second");
 
         generationModifier = config.getInt("generation-modifier");
 
-        rubberBandModifier = config.getDouble("rubber-band-modifier");
+        rubberBandModifier = config.getLong("rubber-band-modifier");
 
         warnPlayer = config.getBoolean("warn-player");
         warnMessage = config.getString("warn-message");
-        warnCooldown = config.getDouble("warn-cooldown-seconds");
+
+        debugSpeed = config.getBoolean("debug-speed");
     }
 }

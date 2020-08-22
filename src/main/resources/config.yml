@@ -6,18 +6,27 @@
 #
 
 # We'll do all of our averages checks over a time frame to rubber band players if they travel too fast
-time-frame-seconds: 15.0
+# Lower values will avoid log earlier but can lead to false positives,
+# especially when a player teleports to unloaded chunks
+time-frame-seconds: 5.0
 
-# Amount of already generated chunks a user can load within the set time frame before getting rubber-banded
-load-limit: 64
+# Amount of already generated chunks a player can load within the set time frame before getting rubber-banded
+# Generating new terrain using vanilla Elytras and rockets will be 380-420 chunks per second
+# The default value of 450 should never punish a vanilla player but might not be the best if you want to allow
+# hacked clients on your server
+load-limit-per-second: 450
 
-# This is the modifier for newly generated chunks, by default generating 1 chunk counts as 8 chunks
+# This is the modifier for newly generated chunks
+# By default generating 1 chunk counts as 8 chunks because generating chunks is resource intensive
 generation-modifier: 8
 
-# This defines how hard the user will be pushed back
-rubber-band-modifier: 2.0
+# This defines how far the player will be pushed back, it depends on the velocity
+# Players with the permission "antigenerationlag.norubberband" will not be rubber banded or warned
+rubber-band-modifier: 15.0
 
 # This is to warn players that they've been rubber-banded
-warn-player: false
-warn-message: "&cYou've going too fast, please lower your speed hacks parameters"
-warn-cooldown-seconds: 5.0
+warn-player: true
+warn-message: "&cYou've going too fast, please lower your speed and wait for chunks to load"
+
+# This is to debug speed that will be send to players with the permission "antigenerationlag.debug"
+debug-speed: false
