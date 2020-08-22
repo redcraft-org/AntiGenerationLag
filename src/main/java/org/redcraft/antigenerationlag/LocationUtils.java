@@ -4,7 +4,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -72,7 +71,7 @@ public class LocationUtils {
         Player nearestPlayer = null;
         double nearestPlayerDistance = Double.MAX_VALUE;
 
-        Location centerChunkLocation = chunk.getBlock(8, 8, 128).getLocation();
+        Location centerChunkLocation = chunk.getBlock(8, 128, 8).getLocation();
         for (Player player : centerChunkLocation.getWorld().getPlayers()) {
             double playerDistanceFromChunk = centerChunkLocation.distance(player.getLocation());
 
