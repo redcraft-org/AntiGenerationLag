@@ -1,0 +1,5 @@
+name: AntiGenerationLag
+main: org.redcraft.antigenerationlag.AntiGenerationLag
+version: 0.0.1-SNAPSHOT
+author: RedCraft
+authors: [lululombard]
