@@ -26,7 +26,13 @@ rubber-band-modifier: 50.0
 
 # This is to warn players that they've been rubber-banded
 warn-player: true
-warn-message: "&cYou've going too fast, please lower your speed and wait for chunks to load"
+warn-message: "&cYou're going too fast, please lower your speed and wait for chunks to load"
+
+# This is to freeze the player, it's very effective when using hacks to force slowing down
+# By default we check frozen players every 10 ticks it's a good compromise for performance
+freeze-player: true
+freeze-duration-seconds: 5.0
+freeze-check-tick-interval: 10
 
 # This is to debug speed that will be send to players with the permission "antigenerationlag.debug"
 debug-speed: false

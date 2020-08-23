@@ -2,6 +2,7 @@ package org.redcraft.antigenerationlag;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -18,6 +19,29 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class LocationSpeedUtils {
 
     static private HashMap<UUID, ArrayList<Long>> chunkTimestamps = new HashMap<UUID, ArrayList<Long>>();
+
+    static private HashMap<UUID, Long> frozenPlayers = new HashMap<UUID, Long>();
+    static private HashMap<UUID, Location> frozenLocations = new HashMap<UUID, Location>();
+
+    static public void checkFrozenPlayers() {
+        // Checks for frozen players and teleport them back to their frozen point
+        for (Map.Entry<UUID, Long> entry : frozenPlayers.entrySet()) {
+            UUID playerUniqueId = entry.getKey();
+            long frozenUntil = entry.getValue();
+            Location frozenPlayerLocation = frozenLocations.get(playerUniqueId);
+
+            Player player = AntiGenerationLag.getInstance().getServer().getPlayer(playerUniqueId);
+
+            // If the player is online and they're frozen, teleport them back
+            if (player.isOnline() && System.currentTimeMillis() < frozenUntil) {
+                player.teleport(frozenPlayerLocation);
+            } else {
+                // Or delete them from the frozen list if they're offline or no longer frozen
+                frozenPlayers.remove(playerUniqueId);
+                frozenLocations.remove(playerUniqueId);
+            }
+        }
+    }
 
     static public void performPlayerSpeedChecks(Player player, Chunk chunk, boolean isNewChunk) {
         UUID playerUniqueId = player.getUniqueId();
@@ -50,6 +74,7 @@ public class LocationSpeedUtils {
         if (chunksLoadedPerSecond > Config.loadLimitPerSecond && !player.hasPermission("antigenerationlag.norubberband")) {
             Vector rubberBandVelocity = player.getVelocity().multiply(-1 * Config.rubberBandModifier);
             Location rubberBandLocation = player.getLocation().add(rubberBandVelocity);
+            rubberBandLocation.setY(player.getLocation().getY());
             punishPlayer(player, rubberBandLocation, chunksLoadedPerSecond);
         }
     }
@@ -59,13 +84,20 @@ public class LocationSpeedUtils {
         player.teleport(rubberBandLocation);
         player.setVelocity(new Vector(0, 0, 0));
         LocationSpeedUtils.resetPlayerTimestamps(player);
-        Logger logger = AntiGenerationLag.instance.getServer().getLogger();
+        Logger logger = AntiGenerationLag.getInstance().getServer().getLogger();
         String template = "Rubber banding %s (chunk load %d over %d)";
         String message = String.format(template, player.getName(), Math.round(chunksLoadedPerSecond), Config.loadLimitPerSecond);
         logger.info(message);
 
         if (Config.warnPlayer) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', Config.warnMessage));
+        }
+
+        if (Config.freezePlayer) {
+            UUID playerUniqueId = player.getUniqueId();
+            long frozenUntil = System.currentTimeMillis() + Config.freezeDurationSeconds * 1000;
+            frozenPlayers.put(playerUniqueId, frozenUntil);
+            frozenLocations.put(playerUniqueId, player.getLocation());
         }
     }
 
@@ -94,7 +126,7 @@ public class LocationSpeedUtils {
         for (Player player : centerChunkLocation.getWorld().getPlayers()) {
             double playerDistanceFromChunk = centerChunkLocation.distance(player.getLocation());
 
-            if (playerDistanceFromChunk < 512 && playerDistanceFromChunk < nearestPlayerDistance) {
+            if (playerDistanceFromChunk < 2048 && playerDistanceFromChunk < nearestPlayerDistance) {
                 nearestPlayerDistance = playerDistanceFromChunk;
                 nearestPlayer = player;
             }

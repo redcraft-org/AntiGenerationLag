@@ -15,6 +15,10 @@ public class Config {
     static public boolean warnPlayer;
     static public String warnMessage;
 
+    static public boolean freezePlayer;
+    static public long freezeDurationSeconds;
+    static public long freezeCheckTickInterval;
+
     static public boolean debugSpeed;
 
     static public void readConfig(JavaPlugin plugin) {
@@ -32,6 +36,10 @@ public class Config {
 
         warnPlayer = config.getBoolean("warn-player");
         warnMessage = config.getString("warn-message");
+
+        freezePlayer = config.getBoolean("freeze-player");
+        freezeDurationSeconds = config.getLong("freeze-duration-seconds");
+        freezeCheckTickInterval = config.getLong("freeze-check-tick-interval");
 
         debugSpeed = config.getBoolean("debug-speed");
     }
