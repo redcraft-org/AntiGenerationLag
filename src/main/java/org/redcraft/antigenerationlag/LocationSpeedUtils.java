@@ -37,7 +37,7 @@ public class LocationSpeedUtils {
                 Player player = Bukkit.getServer().getPlayer(playerUniqueId);
 
                 // If the player is online and they're frozen, teleport them back
-                if (player.isOnline() && System.currentTimeMillis() < frozenPlayer.frozenUntil) {
+                if (player != null && player.isOnline() && System.currentTimeMillis() < frozenPlayer.frozenUntil) {
                     player.teleport(frozenPlayer.location);
                 } else {
                     // Or delete them from the frozen list if they're offline or no longer frozen
