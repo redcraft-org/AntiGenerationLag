@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.bukkit.util.Vector;
+import org.redcraft.antigenerationlag.models.FrozenPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -20,27 +23,31 @@ public class LocationSpeedUtils {
 
     static private HashMap<UUID, ArrayList<Long>> chunkTimestamps = new HashMap<UUID, ArrayList<Long>>();
 
-    static private HashMap<UUID, Long> frozenPlayers = new HashMap<UUID, Long>();
-    static private HashMap<UUID, Location> frozenLocations = new HashMap<UUID, Location>();
+    static private HashMap<UUID, FrozenPlayer> frozenPlayers = new HashMap<UUID, FrozenPlayer>();
+    static private Lock frozenPlayersLock = new ReentrantLock(true);
 
     static public void checkFrozenPlayers() {
         // Checks for frozen players and teleport them back to their frozen point
-        for (Map.Entry<UUID, Long> entry : frozenPlayers.entrySet()) {
-            UUID playerUniqueId = entry.getKey();
-            long frozenUntil = entry.getValue();
-            Location frozenPlayerLocation = frozenLocations.get(playerUniqueId);
+        frozenPlayersLock.lock();
+        try {
+            for (Map.Entry<UUID, FrozenPlayer> entry : frozenPlayers.entrySet()) {
+                UUID playerUniqueId = entry.getKey();
+                FrozenPlayer frozenPlayer = entry.getValue();
 
-            Player player = AntiGenerationLag.getInstance().getServer().getPlayer(playerUniqueId);
+                Player player = Bukkit.getServer().getPlayer(playerUniqueId);
 
-            // If the player is online and they're frozen, teleport them back
-            if (player.isOnline() && System.currentTimeMillis() < frozenUntil) {
-                player.teleport(frozenPlayerLocation);
-            } else {
-                // Or delete them from the frozen list if they're offline or no longer frozen
-                frozenPlayers.remove(playerUniqueId);
-                frozenLocations.remove(playerUniqueId);
+                // If the player is online and they're frozen, teleport them back
+                if (player.isOnline() && System.currentTimeMillis() < frozenPlayer.frozenUntil) {
+                    player.teleport(frozenPlayer.location);
+                } else {
+                    // Or delete them from the frozen list if they're offline or no longer frozen
+                    frozenPlayers.remove(playerUniqueId);
+                }
             }
+        } catch(Exception e) {
+            Bukkit.getServer().getLogger().warning("An error occurred while checking frozen players: " + e.getLocalizedMessage());
         }
+        frozenPlayersLock.unlock();
     }
 
     static public void performPlayerSpeedChecks(Player player, Chunk chunk, boolean isNewChunk) {
@@ -84,10 +91,9 @@ public class LocationSpeedUtils {
         player.teleport(rubberBandLocation);
         player.setVelocity(new Vector(0, 0, 0));
         LocationSpeedUtils.resetPlayerTimestamps(player);
-        Logger logger = AntiGenerationLag.getInstance().getServer().getLogger();
         String template = "Rubber banding %s (chunk load %d over %d)";
         String message = String.format(template, player.getName(), Math.round(chunksLoadedPerSecond), Config.loadLimitPerSecond);
-        logger.info(message);
+        Bukkit.getServer().getLogger().info(message);
 
         if (Config.warnPlayer) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', Config.warnMessage));
@@ -96,8 +102,10 @@ public class LocationSpeedUtils {
         if (Config.freezePlayer) {
             UUID playerUniqueId = player.getUniqueId();
             long frozenUntil = System.currentTimeMillis() + Config.freezeDurationSeconds * 1000;
-            frozenPlayers.put(playerUniqueId, frozenUntil);
-            frozenLocations.put(playerUniqueId, player.getLocation());
+            FrozenPlayer frozenPlayer = new FrozenPlayer(player.getLocation(), frozenUntil);
+            frozenPlayersLock.lock();
+            frozenPlayers.put(playerUniqueId, frozenPlayer);
+            frozenPlayersLock.unlock();
         }
     }
 
