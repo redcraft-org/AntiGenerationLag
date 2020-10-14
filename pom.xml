@@ -6,7 +6,7 @@
 
 	<groupId>org.redcraft.antigenerationlag</groupId>
 	<artifactId>AntiGenerationLag</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 
 	<repositories>
 		<repository>
