@@ -37,3 +37,5 @@ Keep in mind that by default, a newly generated chunk counts as 8 chunks, that's
 You are free to suggest changes by opening an issue ticket.
 
 You can also open PRs, remember to bump the version in `pom.xml` and `plugin.yml` before opening a pull request.
+
+> **⚠️ This repository is archived.** Built for Spigot 1.12-era servers. Modern Paper/Purpur throttle chunk generation natively, making this plugin unnecessary.
